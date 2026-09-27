@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;" />
+  <title>Todo</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-blobs" aria-hidden="true">
+    <span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span>
+  </div>
+
+  <header class="titlebar">
+    <div class="brand"><span class="logo">✓</span> <span>Todo</span></div>
+    <div class="space-switch" id="spaceSwitch" title="Switch space (Ctrl+1 / Ctrl+2)">
+      <span class="space-indicator" id="spaceIndicator"></span>
+      <button class="space-btn" data-space="personal"><span>🏡</span> Personal</button>
+      <button class="space-btn" data-space="work"><span>💼</span> Work</button>
+    </div>
+    <div class="titlebar-actions">
+      <button id="themeToggle" class="icon-btn theme-toggle" title="Toggle theme">
+        <svg class="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5"/><g stroke-linecap="round"><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g></svg>
+        <svg class="moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
+      </button>
+      <div class="win-controls">
+        <button id="winMin" class="win-btn" title="Minimize"><svg viewBox="0 0 10 10"><path d="M1 5h8"/></svg></button>
+        <button id="winMax" class="win-btn" title="Maximize"><svg viewBox="0 0 10 10"><rect x="1.5" y="1.5" width="7" height="7"/></svg></button>
+        <button id="winClose" class="win-btn close" title="Close"><svg viewBox="0 0 10 10"><path d="M1.5 1.5l7 7M8.5 1.5l-7 7"/></svg></button>
+      </div>
+    </div>
+  </header>
+
+  <div class="app">
+    <aside class="sidebar glass">
+      <nav class="nav" id="smartNav">
+        <button class="nav-item" data-view="all"><span class="nav-icon">◎</span><span class="nav-label">All tasks</span><span class="count" data-count="all"></span></button>
+        <button class="nav-item" data-view="today"><span class="nav-icon">☀</span><span class="nav-label">Today</span><span class="count" data-count="today"></span></button>
+        <button class="nav-item" data-view="upcoming"><span class="nav-icon">➜</span><span class="nav-label">Upcoming</span><span class="count" data-count="upcoming"></span></button>
+      </nav>
+
+      <div class="section-title">
+        <span>My lists</span>
+        <button id="addListBtn" class="icon-btn small" title="New list">+</button>
+      </div>
+      <nav class="nav" id="listNav"></nav>
+
+      <form id="newListForm" class="new-list hidden">
+        <input id="newListName" type="text" placeholder="List name" maxlength="30" />
+        <div class="swatches" id="swatches"></div>
+        <div class="new-list-actions">
+          <button type="button" id="cancelList" class="btn ghost">Cancel</button>
+          <button type="submit" class="btn primary">Create</button>
+        </div>
+      </form>
+      <p class="sidebar-hint">Right-click a list to delete it</p>
+    </aside>
+
+    <main class="main">
+      <section class="hero">
+        <div>
+          <p class="greeting" id="greeting">Hello</p>
+          <h1 id="viewTitle">All tasks</h1>
+          <p class="subtitle" id="subtitle"></p>
+        </div>
+        <div class="progress" title="Completion">
+          <svg viewBox="0 0 120 120">
+            <defs>
+              <linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" class="stop-1"/><stop offset="50%" class="stop-2"/><stop offset="100%" class="stop-3"/>
+              </linearGradient>
+            </defs>
+            <circle class="ring-bg" cx="60" cy="60" r="52"/>
+            <circle class="ring" id="ring" cx="60" cy="60" r="52"/>
+          </svg>
+          <div class="progress-label"><strong id="pct">0%</strong><span>done</span></div>
+        </div>
+      </section>
+
+      <form id="addForm" class="add-bar glass">
+        <span class="add-plus">+</span>
+        <input id="taskInput" type="text" placeholder="Add a new task…  (Ctrl+N)" autocomplete="off" maxlength="200" />
+        <div class="prio-picker" id="prioPicker">
+          <button type="button" class="prio-chip low" data-prio="low" title="Low priority"></button>
+          <button type="button" class="prio-chip med active" data-prio="med" title="Medium priority"></button>
+          <button type="button" class="prio-chip high" data-prio="high" title="High priority"></button>
+        </div>
+        <input id="dueInput" type="date" class="date-input" title="Due date" />
+        <select id="listSelect" class="list-select" title="List"></select>
+        <button type="submit" class="btn primary add-btn">Add</button>
+      </form>
+
+      <section class="toolbar">
+        <div class="tabs" id="tabs">
+          <span class="tab-indicator" id="tabIndicator"></span>
+          <button class="tab active" data-filter="all">All</button>
+          <button class="tab" data-filter="active">Active</button>
+          <button class="tab" data-filter="done">Done</button>
+        </div>
+        <div class="toolbar-right">
+          <div class="search">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5" stroke-linecap="round"/></svg>
+            <input id="searchInput" type="text" placeholder="Search…  (Ctrl+F)" />
+          </div>
+          <select id="sortSelect" class="list-select" title="Sort by">
+            <option value="created">Newest</option>
+            <option value="due">Due date</option>
+            <option value="priority">Priority</option>
+          </select>
+          <button id="clearDone" class="btn ghost" title="Delete completed tasks">Clear done</button>
+        </div>
+      </section>
+
+      <ul id="taskList" class="task-list"></ul>
+
+      <div id="emptyState" class="empty hidden">
+        <div class="mascot">
+          <svg class="mascot-sun" viewBox="0 0 200 200" role="img" aria-label="Smiling sun">
+            <defs>
+              <radialGradient id="sunBody" cx="40%" cy="35%" r="70%">
+                <stop offset="0%" stop-color="#fff3b0"/>
+                <stop offset="60%" stop-color="#fcd34d"/>
+                <stop offset="100%" stop-color="#f59e0b"/>
+              </radialGradient>
+            </defs>
+            <g class="rays" fill="#fbbf24">
+              <rect x="95" y="8" width="10" height="26" rx="5"/>
+              <rect x="95" y="8" width="10" height="26" rx="5" transform="rotate(30 100 100)"/>
+              <rect x="95" y="8" width="10" height="26" rx="5" transform="rotate(60 100 100)"/>
+              <rect x="95" y="8" width="10" height="26" rx="5" transform="rotate(90 100 100)"/>
+              <rect x="95" y="8" width="10" height="26" rx="5" transform="rotate(120 100 100)"/>
+              <rect x="95" y="8" width="10" height="26" rx="5" transform="rotate(150 100 100)"/>
+              <rect x="95" y="8" width="10" height="26" rx="5" transform="rotate(180 100 100)"/>
+              <rect x="95" y="8" width="10" height="26" rx="5" transform="rotate(210 100 100)"/>
+              <rect x="95" y="8" width="10" height="26" rx="5" transform="rotate(240 100 100)"/>
+              <rect x="95" y="8" width="10" height="26" rx="5" transform="rotate(270 100 100)"/>
+              <rect x="95" y="8" width="10" height="26" rx="5" transform="rotate(300 100 100)"/>
+              <rect x="95" y="8" width="10" height="26" rx="5" transform="rotate(330 100 100)"/>
+            </g>
+            <g class="sun-face">
+              <circle cx="100" cy="100" r="52" fill="url(#sunBody)"/>
+              <ellipse cx="74" cy="112" rx="8" ry="5" fill="#fb7185" opacity=".55"/>
+              <ellipse cx="126" cy="112" rx="8" ry="5" fill="#fb7185" opacity=".55"/>
+              <g fill="none" stroke="#92400e" stroke-width="4.5" stroke-linecap="round">
+                <path d="M76 98 q8 -9 16 0"/>
+                <path d="M108 98 q8 -9 16 0"/>
+                <path d="M86 114 q14 14 28 0"/>
+              </g>
+            </g>
+          </svg>
+
+          <svg class="mascot-moon" viewBox="0 0 200 200" role="img" aria-label="Sleepy moon">
+            <defs>
+              <radialGradient id="moonBody" cx="35%" cy="40%" r="75%">
+                <stop offset="0%" stop-color="#fefce8"/>
+                <stop offset="70%" stop-color="#fde68a"/>
+                <stop offset="100%" stop-color="#eab308"/>
+              </radialGradient>
+              <mask id="crescent">
+                <rect width="200" height="200" fill="#fff"/>
+                <circle cx="132" cy="82" r="48" fill="#000"/>
+              </mask>
+            </defs>
+            <g class="stars" fill="#fde68a">
+              <path class="star s1" d="M150 40 l3 8 8 3 -8 3 -3 8 -3 -8 -8 -3 8 -3z"/>
+              <path class="star s2" d="M170 120 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2z"/>
+              <path class="star s3" d="M40 40 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2z"/>
+              <circle class="star s4" cx="128" cy="160" r="3"/>
+            </g>
+            <g class="moon-face">
+              <circle cx="100" cy="100" r="56" fill="url(#moonBody)" mask="url(#crescent)"/>
+              <ellipse cx="54" cy="114" rx="6.5" ry="4" fill="#fb7185" opacity=".5"/>
+              <g fill="none" stroke="#854d0e" stroke-width="4" stroke-linecap="round">
+                <path d="M50 101 q6 6 12 0"/>
+                <path d="M70 105 q6 6 12 0"/>
+                <path d="M62 120 q7 6 14 0"/>
+              </g>
+            </g>
+            <g class="zzz" fill="#c4b5fd" font-family="Quicksand, sans-serif" font-weight="700">
+              <text class="z z1" x="112" y="140" font-size="16">z</text>
+              <text class="z z2" x="124" y="126" font-size="20">z</text>
+              <text class="z z3" x="138" y="110" font-size="24">Z</text>
+            </g>
+          </svg>
+        </div>
+        <div class="empty-emoji hidden"></div>
+        <h3>Nothing here yet</h3>
+        <p>Add a task above and get things rolling.</p>
+      </div>
+    </main>
+  </div>
+
+  <div id="drawerBackdrop" class="drawer-backdrop"></div>
+  <aside id="drawer" class="drawer" aria-hidden="true">
+    <header class="drawer-head">
+      <span class="drawer-kicker">Task details</span>
+      <button id="drawerClose" class="icon-btn" title="Close (Esc)">
+        <svg viewBox="0 0 10 10"><path d="M1.5 1.5l7 7M8.5 1.5l-7 7"/></svg>
+      </button>
+    </header>
+
+    <div class="drawer-body">
+      <textarea id="dTitle" class="d-title" rows="1" maxlength="200" placeholder="Task title"></textarea>
+
+      <div class="d-field">
+        <label>Space</label>
+        <div class="d-seg" id="dSpace">
+          <button type="button" data-space="personal">🏡 Personal</button>
+          <button type="button" data-space="work">💼 Work</button>
+        </div>
+      </div>
+
+      <div class="d-grid">
+        <div class="d-field">
+          <label for="dList">List</label>
+          <select id="dList" class="list-select"></select>
+        </div>
+        <div class="d-field">
+          <label for="dDue">Due date</label>
+          <input id="dDue" type="date" class="date-input" />
+        </div>
+      </div>
+
+      <div class="d-field">
+        <label>Priority</label>
+        <div class="d-prio" id="dPrio">
+          <button type="button" data-prio="low"><span class="prio-dot low"></span>Low</button>
+          <button type="button" data-prio="med"><span class="prio-dot med"></span>Medium</button>
+          <button type="button" data-prio="high"><span class="prio-dot high"></span>High</button>
+        </div>
+      </div>
+
+      <div class="d-field">
+        <label for="dNotes">Notes</label>
+        <textarea id="dNotes" class="d-notes" placeholder="Add notes, links, details…"></textarea>
+      </div>
+
+      <div class="d-field">
+        <label>Attachments</label>
+        <div id="dDrop" class="dropzone">
+          <svg viewBox="0 0 24 24"><path d="M21 12.5l-8.6 8.6a5.5 5.5 0 0 1-7.8-7.8l9.2-9.2a3.7 3.7 0 0 1 5.2 5.2l-9.2 9.2a1.8 1.8 0 0 1-2.6-2.6l8.5-8.5"/></svg>
+          <span>Drop files here or <button type="button" id="dAttach" class="link-btn">browse</button></span>
+        </div>
+        <ul id="dFiles" class="files"></ul>
+      </div>
+    </div>
+
+    <footer class="drawer-foot">
+      <span id="dCreated" class="d-created"></span>
+      <button type="button" id="dDelete" class="btn danger">Delete task</button>
+    </footer>
+  </aside>
+
+  <div id="toast" class="toast" role="status">
+    <span id="toastText"></span>
+    <span id="toastActions"></span>
+  </div>
+
+  <canvas id="confetti"></canvas>
+  <script src="app.js"></script>
+</body>
+</html>
